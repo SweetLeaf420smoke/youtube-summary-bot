@@ -7,6 +7,8 @@ import html
 import logging
 import os
 import re
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 
 LOG_DIR = Path(__file__).parent
@@ -271,6 +273,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await update.message.reply_text("———\n\n" + summary)
 
 
+def _run_health_server(port: int) -> None:
+    """Сервер для Fly.io health check на 0.0.0.0:port."""
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.end_headers()
+        def log_message(self, *args):
+            pass
+    server = HTTPServer(("0.0.0.0", port), Handler)
+    server.serve_forever()
+
+
 async def post_init(app: Application) -> None:
     """Меню-полоска: команды при нажатии на имя бота / иконку меню."""
     await app.bot.set_my_commands([
@@ -284,6 +298,10 @@ def main() -> None:
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     if not token:
         raise SystemExit("Задай TELEGRAM_BOT_TOKEN в окружении.")
+    port = os.environ.get("PORT")
+    if port:
+        t = threading.Thread(target=_run_health_server, args=(int(port),), daemon=True)
+        t.start()
     app = (
         Application.builder()
         .token(token)
