@@ -1,0 +1,20 @@
+# fly.toml — конфиг Fly.io для youtube-summary-bot
+# Чтобы машина не останавливалась (scale to zero), задано auto_stop_machines = "off"
+
+app = "youtube-summary-bot"
+
+[build]
+
+[env]
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Не останавливать машину при простое (бот должен работать 24/7)
+  auto_stop_machines = "off"
+  auto_start_machines = true
+
+[vm]
+  size = "shared-cpu-1x"
+  memory = "256mb"
