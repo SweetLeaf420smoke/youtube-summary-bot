@@ -230,7 +230,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         try:
             result = await asyncio.wait_for(
                 loop.run_in_executor(None, fetch_transcript_timestamped, video_id),
-                timeout=45.0,
+                timeout=90.0,
             )
         except asyncio.TimeoutError:
             await update.message.reply_text("Запрос к YouTube занял слишком много времени. Попробуй ещё раз или другую ссылку.")
@@ -252,7 +252,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     try:
         result = await asyncio.wait_for(
             loop.run_in_executor(None, fetch_transcript_timestamped, video_id),
-            timeout=45.0,
+            timeout=90.0,
         )
     except asyncio.TimeoutError:
         await update.message.reply_text("Запрос к YouTube занял слишком много времени. Попробуй ещё раз или другую ссылку.")
