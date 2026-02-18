@@ -11,7 +11,12 @@ log = logging.getLogger(__name__)
 
 
 def get_http_client() -> Session | None:
-    """Сессия с прокси из env или proxy_working.txt. None = без прокси."""
+    """Сессия с прокси только для YouTube (не трогает Telegram). Приоритет: YOUTUBE_PROXY → HTTP_PROXY/HTTPS_PROXY → proxy_working.txt."""
+    px = os.environ.get("YOUTUBE_PROXY", "").strip()
+    if px:
+        client = Session()
+        client.proxies["http"] = client.proxies["https"] = px
+        return client
     if os.environ.get("HTTP_PROXY") or os.environ.get("HTTPS_PROXY"):
         client = Session()
         px_http = os.environ.get("HTTP_PROXY")
@@ -33,10 +38,11 @@ def get_http_client() -> Session | None:
 def fetch_transcript(video_id: str) -> tuple[str | None, str | None]:
     """
     Получить текст транскрипта для video_id. Языки: ru, en.
-    Без прокси (мало запросов — можно без него).
+    Использует прокси из env (HTTP_PROXY/HTTPS_PROXY) или proxy_working.txt, если есть.
     Возвращает (текст, None) при успехе, (None, сообщение_ошибки) при неудаче.
     """
-    api = YouTubeTranscriptApi(http_client=Session())
+    client = get_http_client() or Session()
+    api = YouTubeTranscriptApi(http_client=client)
     try:
         t = api.fetch(video_id, languages=("ru", "en"))
         return " ".join(s.text for s in t.snippets), None
@@ -49,9 +55,10 @@ def fetch_transcript(video_id: str) -> tuple[str | None, str | None]:
 def fetch_transcript_timestamped(video_id: str) -> tuple[list[tuple[float, str]] | None, str | None]:
     """
     Получить транскрипт с таймкодами: список (start_sec, text).
-    Для режима «оглавление».
+    Для режима «оглавление». Использует прокси из env или proxy_working.txt, если есть.
     """
-    api = YouTubeTranscriptApi(http_client=Session())
+    client = get_http_client() or Session()
+    api = YouTubeTranscriptApi(http_client=client)
     try:
         t = api.fetch(video_id, languages=("ru", "en"))
         snippets = [(s.start, s.text) for s in t.snippets]
