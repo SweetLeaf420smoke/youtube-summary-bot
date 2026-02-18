@@ -1,0 +1,17 @@
+.env
+.venv/
+__pycache__/
+.DS_Store
+*.pyc
+*.log
+bot.log
+bot.pid
+bot_stdout.log
+transcripts/
+video_ids.txt
+video_ids_full.txt
+proxy_working.txt
+proxy_failed.txt
+progress.txt
+check_run.txt
+download_log*.txt

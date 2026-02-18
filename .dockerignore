@@ -1,0 +1,13 @@
+.venv
+.env
+*.log
+*.pid
+__pycache__
+.git
+*.pyc
+transcripts
+video_ids.txt
+proxy_working.txt
+download_transcripts.py
+check_proxies.py
+progress.txt
